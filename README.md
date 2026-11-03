@@ -2,13 +2,7 @@
 
 将《影之刃零》主角外观替换为麦晓雯「水墨云图」，支持头发与衣物独立物理。非官方 MOD。
 
-**v0.6.1 为试验版**：[下载 v0.6.1](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.6.1) · [保留的 v0.5](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.5) · [保留的 v0.4](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.4) · [更新记录](CHANGELOG.md) · [v0.6.1 验证记录](docs/validation-v0.6.1.json)
-
-![睁眼](docs/images/v0.6.1/blink_open.jpg)
-
-![闭眼](docs/images/v0.6.1/blink_closed.jpg)
-
-以上为眨眼变形的 Blender 离线渲染，使用占位光照与材质，颜色与游戏内不同。
+**v0.6.1 为试验版**：[下载 v0.6.1](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.6.1) · [保留的 v0.4](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.4) · [更新记录](CHANGELOG.md) · [v0.6.1 验证记录](docs/validation-v0.6.1.json)
 
 ## v0.6.1 内容
 
@@ -22,7 +16,7 @@ v0.6.1 不再使用 `LoopAsync` 和 `ExecuteInGameThread`，全部逻辑放进�
 
 ### 修复人物与武器错位
 
-v0.5 只把显示模型缩到 90%，动画驱动骨架仍是 100%。手里的刀是独立的 `BP_Weapon_Hun_*` Actor，挂在驱动骨架上，v0.5 的转挂逻辑没有覆盖到它，所以手和刀握持处相差约 10 cm。
+此前只把显示模型缩到 90%，动画驱动骨架仍是 100%。手里的刀是独立的 `BP_Weapon_Hun_*` Actor，挂在驱动骨架上，原来的转挂逻辑没有覆盖到它，所以手和刀握持处相差约 10 cm。
 
 现在改为缩放动画驱动骨架，显示模型跟随它。挂在骨架插槽上的手持武器、刀鞘、特效和攻击判定框都按同一比例走，换武器和拔刀收刀也不用再逐个转挂。
 
@@ -59,7 +53,7 @@ PBZ/
 └─ platform/steam/ue4ss/Mods/MaixiaowenInk/Scripts/main.lua
 ```
 
-三种资源文件与 `main.lua` 必须一起更新，不能混用版本：网格多了一个材质槽，v0.5 及更早的脚本不会给它赋材质。包内 `SHA256.json` 校验各文件；Release 的 `SHA256SUMS.txt` 校验压缩包。
+三种资源文件与 `main.lua` 必须一起更新，不能混用版本：网格多了一个材质槽，旧版脚本不会给它赋材质。包内 `SHA256.json` 校验各文件；Release 的 `SHA256SUMS.txt` 校验压缩包。
 
 ## 按键
 
@@ -94,7 +88,7 @@ v0.6.1 的游戏线程逻辑在后续测试中累计运行约 50 分钟，没有
 - 临时恢复原版：F10。只关闭眨眼：F7。只关闭眼睛动态：F8。
 - 永久停用：退出游戏，将加载列表中的条目改为 `MaixiaowenInk : 0`。
 - 卸载：退出游戏，移除本 MOD 三种同名资源、`Mods/MaixiaowenInk` 文件夹及加载条目，保留其他 MOD 和原游戏文件。
-- 回退 v0.5：退出游戏，用 v0.5 包的三种资源和 `main.lua` 一起覆盖 v0.6.1。不要只替换脚本或单个资源。
+- 回退 v0.4：退出游戏，用 v0.4 包的三种资源和 `main.lua` 一起覆盖 v0.6.1。不要只替换脚本或单个资源。
 
 ## 仓库与许可
 
