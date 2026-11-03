@@ -9,6 +9,16 @@ local gazeEnabled = true
 local eyePhase = 0
 local eyeUpdates = 0
 local visualScale = 0.90
+local rootMotionScale = 1 / visualScale
+local blinkEnabled = true
+local blinkName = nil
+local blinkStart = nil
+local blinkSlow = 1
+local blinkQueued = false
+local nextBlinkAt = 0
+local blinkCount = 0
+local blinkClose, blinkHold, blinkOpen = 0.075, 0.035, 0.14
+local gripCheckTicks = 0
 local assetPath = "/Game/Mods/Maixiaowen/SK_Maixiaowen_Ink.SK_Maixiaowen_Ink"
 local materialPaths = {
     "/Game/Mods/Maixiaowen/Materials/M_ink_Prop_2.M_ink_Prop_2",
@@ -49,20 +59,26 @@ local function load(path)
     return object
 end
 
+-- A leader-pose follower reads morph weights from its leader, so both components carry the value.
+local function setBlinkWeight(weight)
+    if not current then return end
+    if not blinkName then blinkName = FName("Blink") end
+    local remove = weight <= 0
+    if valid(current.driver) then current.driver:SetMorphTarget(blinkName, weight, remove) end
+    if valid(current.display) then current.display:SetMorphTarget(blinkName, weight, remove) end
+end
+
 local function restore()
     if not current then return end
+    setBlinkWeight(0)
+    blinkStart = nil
+    if valid(current.pawn) and math.abs(current.pawn.AnimRootMotionTranslationScale - rootMotionScale) < 0.001 then
+        current.pawn.AnimRootMotionTranslationScale = 1
+    end
     if valid(current.driver) then
-        for _,component in ipairs(current.weapons or {}) do
-            if valid(component) then
-                local parent=component:GetAttachParent()
-                if valid(parent) and valid(current.display) and parent:GetFullName()==current.display:GetFullName() then
-                    component:K2_AttachToComponent(current.driver,component:GetAttachSocketName(),0,0,0,false)
-                end
-            end
-        end
+        current.driver:SetRelativeScale3D(current.originalDriverScale)
     end
     if valid(current.display) then
-        current.display:SetRelativeScale3D(current.originalScale)
         current.display.ClothBlendWeight = 0
         current.display.bDisableClothSimulation = true
         if not valid(current.originalMesh) and current.originalMeshPath then
@@ -104,6 +120,29 @@ local function updatePhysics(reset)
     end
 end
 
+-- Scales the animation driver, so hand weapons, scabbards, effects and hit boxes on its sockets stay
+-- with the visible follower. Mesh scale also shrinks root motion, which the translation scale cancels.
+local function updateBodyScale()
+    local scale = current.originalDriverScale
+    local wanted = scale.X * visualScale
+    if math.abs(current.driver.RelativeScale3D.X - wanted) > 0.0001 then
+        current.driver:SetRelativeScale3D({X=wanted,Y=scale.Y*visualScale,Z=scale.Z*visualScale})
+        log("Body scale applied to animation driver: " .. tostring(wanted))
+    end
+    if valid(current.pawn) and math.abs(current.pawn.AnimRootMotionTranslationScale - 1) < 0.001 then
+        current.pawn.AnimRootMotionTranslationScale = rootMotionScale
+    end
+end
+
+local function reportGrip()
+    local socket = FName("weapon_r")
+    local a, b = current.driver:GetSocketLocation(socket), current.display:GetSocketLocation(socket)
+    local dx, dy, dz = a.X - b.X, a.Y - b.Y, a.Z - b.Z
+    log(string.format("Grip check: weapon_r gap %.2f cm, driver scale %.3f", math.sqrt(dx*dx+dy*dy+dz*dz), current.driver.RelativeScale3D.X))
+    local system = UEHelpers.GetKismetSystemLibrary()
+    log("Skin cache mode " .. tostring(system:GetConsoleVariableIntValue("r.SkinCache.Mode")) .. ", compile shaders " .. tostring(system:GetConsoleVariableIntValue("r.SkinCache.CompileShaders")))
+end
+
 local materialDefinitions = {
 {Albedo="T_F_Hack_ink_S_012_Props_Mobile_C_5d9e2c",Normal="T_F_Hack_ink_S_012_Props_Mobile_N_7f6479",Mix="T_ARM_T_F_Hack_ink_S_012_Props_Mobile_MRO_1e72e7"},
 {Albedo="T_F_Hack_ink_S_012_Mask_PCUI_C_87f1b8",Normal="T_F_Hack_ink_S_012_Mask_PCUI_N_dcdb86",Mix="T_ARM_T_F_Hack_ink_S_012_Mask_PCUI_MRA_225221"},
@@ -115,7 +154,8 @@ local materialDefinitions = {
 {eye=true},
 {hair=true,rootColor=0.52,tipColor=0.82},
 {Albedo="T_F_Hack_ink_S_012_Lower_3P_Mobile_C_342288",Normal="T_F_Hack_ink_S_012_Lower_3P_Mobile_N_2a5fb8",Mix="T_ARM_T_F_Hack_ink_S_012_Lower_3P_Mobile_MRO_7c9950"},
-{Albedo="T_Signal_lamp_001_C_HD_25cd11",Normal="T_Signal_lamp_001_N_HD_fb2a8c",Mix="T_ARM_T_Signal_lamp_001_MRA_HD_83f151"}
+{Albedo="T_Signal_lamp_001_C_HD_25cd11",Normal="T_Signal_lamp_001_N_HD_fb2a8c",Mix="T_ARM_T_Signal_lamp_001_MRA_HD_83f151"},
+{hair=true,rootColor=0.28,tipColor=0.48}
 }
 local function makeMaterial(pawn, index)
     local definition = materialDefinitions[index]
@@ -224,7 +264,7 @@ local function apply()
         local driver, display = components.CharacterMesh0, components.meshScarf
         if not valid(driver) or not valid(display) then return end
         local saved = {
-            ownerName = ownerName, driver = driver, display = display,
+            ownerName = ownerName, pawn = pawn, driver = driver, display = display,
             originalMesh = display:GetSkeletalMeshAsset(), originalMaterials = {},
             visibility = {}, originalTickOption = driver.VisibilityBasedAnimTickOption,
             originalAllowCloth = display.bAllowClothActors,
@@ -232,7 +272,7 @@ local function apply()
             originalClothBlend = display.ClothBlendWeight,
             originalFollowerTick = display.bFollowerShouldTickPose,
             originalDisplayTick = display:IsComponentTickEnabled(),
-            originalScale = {X=display.RelativeScale3D.X,Y=display.RelativeScale3D.Y,Z=display.RelativeScale3D.Z},
+            originalDriverScale = {X=driver.RelativeScale3D.X,Y=driver.RelativeScale3D.Y,Z=driver.RelativeScale3D.Z},
         }
         if valid(saved.originalMesh) then saved.originalMeshPath = saved.originalMesh:GetFullName():match("^[^ ]+ (.+)$") end
         for i = 0, display:GetNumMaterials() - 1 do
@@ -243,16 +283,8 @@ local function apply()
                 table.insert(saved.visibility, {component = component, visible = component:IsVisible(), hidden = component.bHiddenInGame})
             end
         end
-        saved.weapons={}
-        for name,component in pairs(components) do
-            if component~=display and not hiddenNames[name] then
-                local parent=component:GetAttachParent()
-                if valid(parent) and parent:GetFullName()==driver:GetFullName() and component:GetAttachSocketName():ToString()~="None" then
-                    table.insert(saved.weapons,component)
-                end
-            end
-        end
         current = saved
+        gripCheckTicks = 0
         log("Using original animation driver: " .. driver:GetFullName())
     end
     -- Keep the full game skeleton and animation blueprint on the original driver.
@@ -266,7 +298,7 @@ local function apply()
         end
         current.display:SetAllowClothActors(true)
         current.display:SetSkeletalMeshAsset(replacement)
-        current.display:SetRelativeScale3D({X=current.originalScale.X*visualScale,Y=current.originalScale.Y*visualScale,Z=current.originalScale.Z*visualScale})
+        current.display.bDisableMorphTarget = false
         current.display:SetLeaderPoseComponent(current.driver, true, true)
         current.display:SetComponentTickEnabled(true)
         updatePhysics(true)
@@ -274,17 +306,7 @@ local function apply()
         log("Clothing simulation interactor: " .. (valid(interactor) and interactor:GetFullName() or "not available"))
         log("Appearance applied: " .. replacement:GetFullName())
     end
-    for _,component in ipairs(current.weapons or {}) do
-        if valid(component) then
-            local parent=component:GetAttachParent()
-            local socket=component:GetAttachSocketName()
-            if valid(parent) and parent:GetFullName()==current.driver:GetFullName() and current.display:DoesSocketExist(socket) then
-                if component:K2_AttachToComponent(current.display,socket,0,0,0,false) then
-                    log("Weapon attached to compact visual: "..component:GetFullName().." socket="..socket:ToString())
-                end
-            end
-        end
-    end
+    updateBodyScale()
     for _, entry in ipairs(current.visibility) do
         if valid(entry.component) then
             entry.component:SetVisibility(entry.component == current.display, false)
@@ -298,6 +320,13 @@ local function apply()
             physicsStatsReported = true
         end
     end
+    if gripCheckTicks >= 0 then
+        gripCheckTicks = gripCheckTicks + 1
+        if gripCheckTicks >= 20 then
+            gripCheckTicks = -1
+            reportGrip()
+        end
+    end
 end
 
 local function guardedApply()
@@ -308,63 +337,143 @@ local function guardedApply()
     end
 end
 
-RegisterKeyBind(Key.F10, function()
-    ExecuteInGameThread(function()
+local function resetGaze()
+    if current and valid(current.display) then
+        local eye=current.display:GetMaterial(7)
+        if valid(eye) then
+            eye:SetScalarParameterValue(FName("PupilShiftX"),0)
+            eye:SetScalarParameterValue(FName("PupilShiftY"),0)
+            eye:SetScalarParameterValue(FName("PupilScale"),0.79)
+        end
+    end
+end
+
+local function stepGaze()
+    if not enabled or not gazeEnabled or not current or not valid(current.display) then return end
+    local ok,err=pcall(function()
+        -- Resolve the live instance from the component each time; never retain a second eye MID.
+        local eye=current.display:GetMaterial(7)
+        if not valid(eye) then return end
+        eyePhase=eyePhase+0.25
+        eye:SetScalarParameterValue(FName("PupilShiftX"),0.006*math.sin(eyePhase*0.67)+0.002*math.sin(eyePhase*1.31))
+        eye:SetScalarParameterValue(FName("PupilShiftY"),0.003*math.sin(eyePhase*0.43))
+        eye:SetScalarParameterValue(FName("PupilScale"),0.79+0.018*math.sin(eyePhase*0.23))
+        eyeUpdates=eyeUpdates+1
+        if eyeUpdates==1 or eyeUpdates%240==0 then log("Eye animation updates: "..tostring(eyeUpdates)) end
+    end)
+    if not ok then gazeEnabled=false;log("Eye experiment disabled: "..tostring(err)) end
+end
+
+local function blinkCurve(t)
+    if t < blinkClose then
+        local x = t / blinkClose
+        return x * x
+    elseif t < blinkClose + blinkHold then
+        return 1
+    end
+    local x = (t - blinkClose - blinkHold) / blinkOpen
+    if x >= 1 then return 0 end
+    return (1 - x) * (1 - x)
+end
+
+local function scheduleBlink(now)
+    -- About one blink in six is a quick double blink, as people tend to do.
+    if not blinkQueued and math.random() < 0.16 then
+        blinkQueued = true
+        nextBlinkAt = now + 0.12 + math.random() * 0.1
+    else
+        blinkQueued = false
+        nextBlinkAt = now + 2.5 + math.random() * 4
+    end
+end
+
+local function stepBlink(now)
+    if not enabled or not blinkEnabled or not current or not valid(current.display) then return end
+    if not blinkStart and now<nextBlinkAt then return end
+    local ok,err=pcall(function()
+        if not blinkStart then blinkStart=now end
+        local t=(now-blinkStart)/blinkSlow
+        local weight=blinkCurve(t)
+        if t>=blinkClose+blinkHold+blinkOpen then
+            weight=0
+            blinkStart=nil
+            blinkSlow=1
+            scheduleBlink(now)
+            blinkCount=blinkCount+1
+            if blinkCount==1 or blinkCount%120==0 then log("Blinks played: "..tostring(blinkCount)) end
+        end
+        setBlinkWeight(weight)
+    end)
+    if not ok then blinkEnabled=false;log("Blink disabled: "..tostring(err)) end
+end
+
+-- UE4SS runs every thread of a mod on one Lua VM and holds no lock around LoopAsync or game-thread
+-- callbacks, so Lua running off the game thread eventually corrupts the VM. All work happens in
+-- gameThreadTick. Key callbacks arrive on the input thread and only flip a flag that already exists,
+-- which allocates nothing.
+local keyRequests = {appearance=false, physics=false, gaze=false, blink=false, slowBlink=false}
+
+local function handleKeys()
+    if keyRequests.appearance then
+        keyRequests.appearance=false
         enabled = not enabled
         if enabled then guardedApply() else
             local ok, err = pcall(restore)
             if not ok then log("Restore error: " .. tostring(err)) end
         end
         log("Enabled: " .. tostring(enabled))
-    end)
-end)
-
-RegisterKeyBind(Key.F9, function()
-    ExecuteInGameThread(function()
+    end
+    if keyRequests.physics then
+        keyRequests.physics=false
         physicsEnabled = not physicsEnabled
         local ok, err = pcall(function() updatePhysics(true) end)
         if not ok then log("Physics toggle error: " .. tostring(err)) end
         log("Independent hair / clothing physics: " .. tostring(physicsEnabled))
-    end)
-end)
-
-LoopAsync(250, function()
-    ExecuteInGameThread(guardedApply)
-    return false
-end)
-log("Loaded appearance v0.5: compact visual proportions, silver scalp coverage and subtle eyes. F10 toggles appearance. F9 toggles independent hair / clothing physics. F8 toggles subtle eye movement.")
-
-
--- Only the visible follower is scaled. The animation driver and capsule are untouched.
-RegisterKeyBind(Key.F8,function()
-    ExecuteInGameThread(function()
+    end
+    if keyRequests.gaze then
+        keyRequests.gaze=false
         gazeEnabled=not gazeEnabled
-        if current and valid(current.display) then
-            local eye=current.display:GetMaterial(7)
-            if valid(eye) then
-                eye:SetScalarParameterValue(FName("PupilShiftX"),0)
-                eye:SetScalarParameterValue(FName("PupilShiftY"),0)
-                eye:SetScalarParameterValue(FName("PupilScale"),0.79)
-            end
-        end
+        local ok,err=pcall(resetGaze)
+        if not ok then log("Eye reset error: "..tostring(err)) end
         log("Subtle eye movement: "..tostring(gazeEnabled))
-    end)
-end)
-LoopAsync(250,function()
-    ExecuteInGameThread(function()
-        if not enabled or not gazeEnabled or not current or not valid(current.display) then return end
-        local ok,err=pcall(function()
-            -- Resolve the live instance from the component each time; never retain a second eye MID.
-            local eye=current.display:GetMaterial(7)
-            if not valid(eye) then return end
-            eyePhase=eyePhase+0.25
-            eye:SetScalarParameterValue(FName("PupilShiftX"),0.006*math.sin(eyePhase*0.67)+0.002*math.sin(eyePhase*1.31))
-            eye:SetScalarParameterValue(FName("PupilShiftY"),0.003*math.sin(eyePhase*0.43))
-            eye:SetScalarParameterValue(FName("PupilScale"),0.79+0.018*math.sin(eyePhase*0.23))
-            eyeUpdates=eyeUpdates+1
-            if eyeUpdates==1 or eyeUpdates%240==0 then log("Eye animation updates: "..tostring(eyeUpdates)) end
-        end)
-        if not ok then gazeEnabled=false;log("Eye experiment disabled: "..tostring(err)) end
-    end)
-    return false
-end)
+    end
+    if keyRequests.blink then
+        keyRequests.blink=false
+        blinkEnabled=not blinkEnabled
+        blinkStart=nil
+        blinkSlow=1
+        local ok,err=pcall(function() setBlinkWeight(0) end)
+        if not ok then log("Blink toggle error: "..tostring(err)) end
+        log("Blinking: "..tostring(blinkEnabled))
+    end
+    if keyRequests.slowBlink then
+        keyRequests.slowBlink=false
+        blinkEnabled=true
+        blinkStart=nil
+        blinkSlow=10
+        nextBlinkAt=0
+        log("Slow test blink")
+    end
+end
+
+local nextApplyAt = 0
+local function gameThreadTick()
+    local now=os.clock()
+    handleKeys()
+    if now>=nextApplyAt then
+        nextApplyAt=now+0.25
+        guardedApply()
+        stepGaze()
+    end
+    stepBlink(now)
+end
+
+RegisterKeyBind(Key.F10,function() keyRequests.appearance=true end)
+RegisterKeyBind(Key.F9,function() keyRequests.physics=true end)
+RegisterKeyBind(Key.F8,function() keyRequests.gaze=true end)
+RegisterKeyBind(Key.F7,function() keyRequests.blink=true end)
+RegisterKeyBind(Key.F7,{ModifierKey.SHIFT},function() keyRequests.slowBlink=true end)
+log("Loaded appearance v0.6.1: game-thread only, unified body scale with weapons, eyelid blink. F10 toggles appearance. F9 toggles independent hair / clothing physics. F8 toggles subtle eye movement. F7 toggles blinking; Shift+F7 plays a slow test blink.")
+
+-- Registered last: from here on the game thread may enter Lua, so this chunk must already be finished.
+LoopInGameThreadWithDelay(16,gameThreadTick)
