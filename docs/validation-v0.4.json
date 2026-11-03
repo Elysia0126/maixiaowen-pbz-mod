@@ -1,0 +1,63 @@
+{
+  "version": "0.4",
+  "status": "offline_and_basic_in_game_validation_passed",
+  "changes": [
+    "Face diffuse matched to exposed body reference in linear color space",
+    "Dedicated face AO/roughness/metallic map replaces equipment placeholder",
+    "Adjusted native eye iris, pupil, sclera, roughness and reflection parameters"
+  ],
+  "skin_textures": {
+    "T_MaixSkin_HeadMatched": {
+      "size": [
+        2048,
+        2048
+      ],
+      "virtual": true,
+      "maximum_RGBA_roundtrip_error": 0
+    },
+    "T_MaixSkin_HeadARM": {
+      "size": [
+        2048,
+        2048
+      ],
+      "virtual": true,
+      "maximum_RGBA_roundtrip_error": 0
+    }
+  },
+  "reference_neck_srgb_before": [
+    192,
+    148,
+    132
+  ],
+  "body_reference_srgb_target": [
+    200,
+    167,
+    144
+  ],
+  "mesh_skeleton_and_clothing_equal_to_v03": true,
+  "in_game": {
+    "map": "B02/PBZ_Xigu_WP",
+    "front_and_both_side_closeups_checked": true,
+    "face_neck_shoulder_overview_checked": true,
+    "iris_sclera_and_pupil_visible": true,
+    "f9_disable_enable": true,
+    "f10_restore_reapply": true,
+    "inspection_session_over_three_minutes_without_crash": true,
+    "fresh_launch_with_production_script": true
+  },
+  "excluded_experiment": {
+    "automatic_pupil_drift": "Removed after first test crashed; exact crash cause not established"
+  },
+  "temporary_test_keys_removed": true,
+  "proof_images": [
+    "docs/images/front-eyes.jpg",
+    "docs/images/side-skin.jpg",
+    "docs/images/skin-overview.jpg",
+    "docs/images/installed.jpg"
+  ],
+  "limitations": [
+    "Skin tone still responds to scene lighting and shadows",
+    "Eye liveliness improvement is through material parameters; no new blink or gaze animation",
+    "Basic gameplay checks only; all maps, cutscenes and long combat sessions not covered"
+  ]
+}

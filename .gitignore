@@ -1,0 +1,8 @@
+*.zip
+*.pak
+*.utoc
+*.ucas
+*.dmp
+*.log
+__pycache__/
+.env
