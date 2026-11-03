@@ -1,6 +1,7 @@
 {
-  "version": "0.4",
-  "asset": "MaixiaowenInk_PBZ_Mod_v0.4.zip",
-  "bytes": 87625850,
-  "sha256": "8b084c27370709ee432aedbaa479d424eb623175298a812ef4ed606cc2ed13ee"
+  "version": "0.5",
+  "channel": "experimental_prerelease",
+  "asset": "MaixiaowenInk_PBZ_Mod_v0.5.zip",
+  "bytes": 97349745,
+  "sha256": "9ef66a732dca43bb28118ff8d6a10758542c9472f82a352ba3b5492725e3818f"
 }

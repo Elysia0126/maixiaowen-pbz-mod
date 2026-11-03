@@ -5,6 +5,10 @@ local physicsStatsReported = false
 local current = nil
 local replacement = nil
 local materials = {}
+local gazeEnabled = true
+local eyePhase = 0
+local eyeUpdates = 0
+local visualScale = 0.90
 local assetPath = "/Game/Mods/Maixiaowen/SK_Maixiaowen_Ink.SK_Maixiaowen_Ink"
 local materialPaths = {
     "/Game/Mods/Maixiaowen/Materials/M_ink_Prop_2.M_ink_Prop_2",
@@ -47,7 +51,18 @@ end
 
 local function restore()
     if not current then return end
+    if valid(current.driver) then
+        for _,component in ipairs(current.weapons or {}) do
+            if valid(component) then
+                local parent=component:GetAttachParent()
+                if valid(parent) and valid(current.display) and parent:GetFullName()==current.display:GetFullName() then
+                    component:K2_AttachToComponent(current.driver,component:GetAttachSocketName(),0,0,0,false)
+                end
+            end
+        end
+    end
     if valid(current.display) then
+        current.display:SetRelativeScale3D(current.originalScale)
         current.display.ClothBlendWeight = 0
         current.display.bDisableClothSimulation = true
         if not valid(current.originalMesh) and current.originalMeshPath then
@@ -95,7 +110,7 @@ local materialDefinitions = {
 {Albedo="T_F_Hack_ink_S_012_Upper_3P_MobileUI_01_C_4c339b",Normal="T_F_Hack_ink_S_012_Upper_3P_MobileUI_01_N_8037d3",Mix="T_ARM_T_F_Hack_ink_S_012_Upper_3P_MobileUI_01_MRA_3e2d80"},
 {hair=true,rootColor=0.28,tipColor=0.48},
 {Albedo="T_F_Hack_ink_S_012_Upper_3P_MobileUI_02_C_370bce",Normal="T_F_Hack_ink_S_012_Upper_3P_MobileUI_02_N_a8ed2a",Mix="T_ARM_T_F_Hack_ink_S_012_Upper_3P_MobileUI_02_MRA_45b83f"},
-{Albedo="T_MaixSkin_HeadMatched",Normal="T_F_Hack_ink_S_012_Head_N_8bd2fa",Mix="T_MaixSkin_HeadARM",skin=true},
+{Albedo="T_MaixSkin_Scalp_v05",Normal="T_F_Hack_ink_S_012_Head_N_8bd2fa",Mix="T_MaixSkin_HeadARM",skin=true},
 {occlusion=true},
 {eye=true},
 {hair=true,rootColor=0.52,tipColor=0.82},
@@ -136,8 +151,8 @@ local function makeMaterial(pawn, index)
     if definition.hair then
         -- Supply the matching regular and virtual alpha assets for native permutations.
         -- All remaining hair maps are virtual textures, matching the native sampler types.
-        setTexture("Alpha(NoVT)", "T_MaixHair_Alpha")
-        setTexture("Alpha", "T_MaixHair_AlphaVT")
+        setTexture("Alpha(NoVT)", "T_MaixHair_Coverage_v05")
+        setTexture("Alpha", "T_MaixHair_CoverageVT_v05")
         setTexture("Diffuse", "T_MaixHair_Diffuse")
         setTexture("Root", "T_MaixHair_Root")
         setTexture("Depth", "T_MaixHair_Depth")
@@ -217,6 +232,7 @@ local function apply()
             originalClothBlend = display.ClothBlendWeight,
             originalFollowerTick = display.bFollowerShouldTickPose,
             originalDisplayTick = display:IsComponentTickEnabled(),
+            originalScale = {X=display.RelativeScale3D.X,Y=display.RelativeScale3D.Y,Z=display.RelativeScale3D.Z},
         }
         if valid(saved.originalMesh) then saved.originalMeshPath = saved.originalMesh:GetFullName():match("^[^ ]+ (.+)$") end
         for i = 0, display:GetNumMaterials() - 1 do
@@ -225,6 +241,15 @@ local function apply()
         for name, component in pairs(components) do
             if hiddenNames[name] or name == "meshScarf" then
                 table.insert(saved.visibility, {component = component, visible = component:IsVisible(), hidden = component.bHiddenInGame})
+            end
+        end
+        saved.weapons={}
+        for name,component in pairs(components) do
+            if component~=display and not hiddenNames[name] then
+                local parent=component:GetAttachParent()
+                if valid(parent) and parent:GetFullName()==driver:GetFullName() and component:GetAttachSocketName():ToString()~="None" then
+                    table.insert(saved.weapons,component)
+                end
             end
         end
         current = saved
@@ -241,12 +266,24 @@ local function apply()
         end
         current.display:SetAllowClothActors(true)
         current.display:SetSkeletalMeshAsset(replacement)
+        current.display:SetRelativeScale3D({X=current.originalScale.X*visualScale,Y=current.originalScale.Y*visualScale,Z=current.originalScale.Z*visualScale})
         current.display:SetLeaderPoseComponent(current.driver, true, true)
         current.display:SetComponentTickEnabled(true)
         updatePhysics(true)
         local interactor = current.display:GetClothingSimulationInteractor(FName("None"))
         log("Clothing simulation interactor: " .. (valid(interactor) and interactor:GetFullName() or "not available"))
         log("Appearance applied: " .. replacement:GetFullName())
+    end
+    for _,component in ipairs(current.weapons or {}) do
+        if valid(component) then
+            local parent=component:GetAttachParent()
+            local socket=component:GetAttachSocketName()
+            if valid(parent) and parent:GetFullName()==current.driver:GetFullName() and current.display:DoesSocketExist(socket) then
+                if component:K2_AttachToComponent(current.display,socket,0,0,0,false) then
+                    log("Weapon attached to compact visual: "..component:GetFullName().." socket="..socket:ToString())
+                end
+            end
+        end
     end
     for _, entry in ipairs(current.visibility) do
         if valid(entry.component) then
@@ -291,9 +328,43 @@ RegisterKeyBind(Key.F9, function()
     end)
 end)
 
-LoopAsync(1500, function()
+LoopAsync(250, function()
     ExecuteInGameThread(guardedApply)
     return false
 end)
-log("Loaded appearance v0.4: matched skin and refined eyes. F10 toggles appearance. F9 toggles independent hair / clothing physics.")
+log("Loaded appearance v0.5: compact visual proportions, silver scalp coverage and subtle eyes. F10 toggles appearance. F9 toggles independent hair / clothing physics. F8 toggles subtle eye movement.")
 
+
+-- Only the visible follower is scaled. The animation driver and capsule are untouched.
+RegisterKeyBind(Key.F8,function()
+    ExecuteInGameThread(function()
+        gazeEnabled=not gazeEnabled
+        if current and valid(current.display) then
+            local eye=current.display:GetMaterial(7)
+            if valid(eye) then
+                eye:SetScalarParameterValue(FName("PupilShiftX"),0)
+                eye:SetScalarParameterValue(FName("PupilShiftY"),0)
+                eye:SetScalarParameterValue(FName("PupilScale"),0.79)
+            end
+        end
+        log("Subtle eye movement: "..tostring(gazeEnabled))
+    end)
+end)
+LoopAsync(250,function()
+    ExecuteInGameThread(function()
+        if not enabled or not gazeEnabled or not current or not valid(current.display) then return end
+        local ok,err=pcall(function()
+            -- Resolve the live instance from the component each time; never retain a second eye MID.
+            local eye=current.display:GetMaterial(7)
+            if not valid(eye) then return end
+            eyePhase=eyePhase+0.25
+            eye:SetScalarParameterValue(FName("PupilShiftX"),0.006*math.sin(eyePhase*0.67)+0.002*math.sin(eyePhase*1.31))
+            eye:SetScalarParameterValue(FName("PupilShiftY"),0.003*math.sin(eyePhase*0.43))
+            eye:SetScalarParameterValue(FName("PupilScale"),0.79+0.018*math.sin(eyePhase*0.23))
+            eyeUpdates=eyeUpdates+1
+            if eyeUpdates==1 or eyeUpdates%240==0 then log("Eye animation updates: "..tostring(eyeUpdates)) end
+        end)
+        if not ok then gazeEnabled=false;log("Eye experiment disabled: "..tostring(err)) end
+    end)
+    return false
+end)

@@ -1,0 +1,126 @@
+{
+  "version": "0.5",
+  "release_channel": "experimental_prerelease",
+  "environment": {
+    "os": "Windows",
+    "game_build": "301524-17219",
+    "engine": "5.7.4",
+    "map": "B02/PBZ_Xigu_WP"
+  },
+  "body": {
+    "method": "uniform visible follower scale",
+    "scale": 0.9,
+    "driver_scale": 1.0,
+    "capsule_unchanged": true,
+    "original_reference_bones_unchanged": 79,
+    "attachment_bones_added": 10,
+    "mesh_sockets": 12,
+    "precise_official_height_reconstruction": false,
+    "all_weapons_tested": false
+  },
+  "eyes": {
+    "method": "native eye material scalar parameters",
+    "subtle_pupil_shift": true,
+    "pupil_scale_variation": true,
+    "blinking": false,
+    "target_tracking": false,
+    "toggle": "F8"
+  },
+  "hair": {
+    "T_MaixSkin_Scalp_v05": {
+      "size": [
+        2048,
+        2048
+      ],
+      "maximum_RGBA_error": 0,
+      "virtual": true
+    },
+    "T_MaixHair_Coverage_v05": {
+      "size": [
+        2048,
+        2048
+      ],
+      "maximum_RGBA_error": 0,
+      "virtual": false
+    },
+    "T_MaixHair_CoverageVT_v05": {
+      "size": [
+        2048,
+        2048
+      ],
+      "maximum_RGBA_error": 0,
+      "virtual": true
+    }
+  },
+  "physics": {
+    "cloth_count": 4,
+    "dynamic_particles": 2422,
+    "physical_mesh_data_unchanged_from_v04": true,
+    "editor_simulation_passed": true,
+    "all_positions_finite": true,
+    "toggle": "F9"
+  },
+  "audio": {
+    "requested": "First-stage short sword exertion replacement",
+    "status": "not_installed_original_audio_retained",
+    "target_event": "SFX_Combat_Vo_Hun_Attack_Short",
+    "event_id": 47572535,
+    "duration_seconds": [
+      0.133,
+      0.18754166
+    ],
+    "languages": {
+      "Chinese": 9,
+      "English(US)": 9
+    },
+    "storage": "Wwise packaged media in WwiseAssetLibrary; no loose target WEM found",
+    "synthesis": "No actor-voice clone generated; no suitable generic synthesis service configured",
+    "validation": "No verified replacement playback; excluded from v0.5 release"
+  },
+  "in_game": {
+    "four_head_angles_inspected": true,
+    "ear_skin_inspected": true,
+    "normal_sword_attacks_observed": 4,
+    "back_weapon_and_hand_grip_inspected": true,
+    "F8_off_on": true,
+    "F9_off_on": true,
+    "F10_restore_reapply": true,
+    "retest_without_full_scene_diagnostic_over_10_minutes": true,
+    "retest_crash_observed": false,
+    "release_script_restart": {
+      "status": "passed_basic_restart",
+      "normal_sword_attack_observed": true,
+      "four_cloth_sections_active": true,
+      "pupil_updates_at_least": 240,
+      "crash_observed": false,
+      "source_matches_installed": true,
+      "temporary_camera_or_diagnostic_bindings": false,
+      "proof_image": "docs/images/v0.5/installed.jpg",
+      "long_combat_tested": false
+    }
+  },
+  "trial_crash": {
+    "observed": true,
+    "module": "UE4SS.dll",
+    "exception": "access violation",
+    "occurred_after": "temporary full-scene diagnostic following an attack",
+    "exact_cause": "not established",
+    "temporary_diagnostic_and_cameras_excluded_from_release": true
+  },
+  "limitations": [
+    "not all weapons, maps, cutscenes, respawns or long combat tested",
+    "visual scale does not change collision or hit volume",
+    "no new blink or target tracking",
+    "hair cards can still show gaps at grazing angles",
+    "original voice retained"
+  ],
+  "proof_images": [
+    "docs/images/v0.5/front.jpg",
+    "docs/images/v0.5/side.jpg",
+    "docs/images/v0.5/hair.jpg",
+    "docs/images/v0.5/overview.jpg",
+    "docs/images/v0.5/grip.jpg",
+    "docs/images/v0.5/attack.jpg",
+    "docs/images/v0.5/installed.jpg"
+  ]
+}
