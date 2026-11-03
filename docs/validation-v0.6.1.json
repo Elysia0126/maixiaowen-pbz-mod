@@ -1,0 +1,91 @@
+{
+  "version": "0.6.1",
+  "release_channel": "experimental",
+  "environment": {
+    "game_build": "301524-17219",
+    "engine": "5.7.4"
+  },
+  "body": {
+    "method": "uniform scale on the animation driver; follower and attached weapons inherit it",
+    "scale": 0.9,
+    "follower_relative_scale_changed": false,
+    "capsule_unchanged": true,
+    "root_motion_translation_scale": 1.1111,
+    "weapon_hit_volume_scaled": true
+  },
+  "blink": {
+    "morph_target": "Blink",
+    "cooked_morph_vertices": 1302,
+    "source_rows_matched": 1298,
+    "source_rows": 1298,
+    "lash_section_material_index": 11,
+    "lash_polygons": 463,
+    "leader_follower_weight_test": {
+      "mesh_morph_targets": 1,
+      "leader_morph_targets": 0,
+      "baseline": {
+        "per_frame_weight": 0,
+        "per_frame_active": 0
+      },
+      "follower_only": {
+        "per_frame_weight": 0.699999988079071,
+        "per_frame_active": 1
+      },
+      "leader_only": {
+        "per_frame_weight": 0.699999988079071,
+        "per_frame_active": 1
+      },
+      "both": {
+        "per_frame_weight": 0.699999988079071,
+        "per_frame_active": 1
+      },
+      "cleared": {
+        "per_frame_weight": 0,
+        "per_frame_active": 0
+      }
+    },
+    "toggle": "F7",
+    "slow_test": "Shift+F7"
+  },
+  "threading": {
+    "lua_runs_on": "game thread via LoopInGameThreadWithDelay",
+    "uses_LoopAsync": false,
+    "uses_ExecuteInGameThread": false,
+    "key_callbacks": "input thread; flip an existing flag only"
+  },
+  "physics": {
+    "cloth_count": 4,
+    "dynamic_particles": 2422,
+    "kinematic_particles": 17198,
+    "maximum_displacement_cm": 8.916888236999512,
+    "all_positions_finite": true,
+    "passed": true
+  },
+  "in_game": {
+    "v0.6_user_confirmed": [
+      "hand grip",
+      "blink"
+    ],
+    "v0.6_grip_log": "weapon_r gap 0.00 cm",
+    "v0.6_crash": {
+      "when": "about 8.5 minutes into the session, boss fight",
+      "module": "UE4SS.dll",
+      "thread": "GameThread",
+      "exception": "access violation in the embedded Lua VM; table pointer held the text GetAddre",
+      "likely_cause": "unsynchronised Lua access from LoopAsync and game-thread callbacks",
+      "cause_status": "inferred from source and dump; other thread state not visible in the dump"
+    },
+    "v0.6.1_tested": false,
+    "pending": [
+      "v0.6.1 long combat stability",
+      "attack reach feel",
+      "other weapons",
+      "cutscenes",
+      "respawn"
+    ]
+  },
+  "in_game_followup": {
+    "game_thread_logic_minutes_without_new_crash_dump": 50,
+    "note": "Observed after packaging, mostly in scene and short combat. Long combat stability remains unconfirmed."
+  }
+}
