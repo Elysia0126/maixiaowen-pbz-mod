@@ -1,0 +1,205 @@
+{
+  "version": "0.7",
+  "channel": "experimental_prerelease",
+  "engine": "UE 5.7.4",
+  "source_and_installed_files_match": true,
+  "io_store_verification": "passed",
+  "mesh_adjustments": {
+    "front_tip_before_cm": 73.38189697265625,
+    "front_tip_after_cm": 98,
+    "physical_tip_before_cm": 97.71868896484375,
+    "free_front_particles": 52,
+    "cheek_max_inset_per_side_cm": 0.28371092677116394,
+    "dark_hair_cards_left": 8,
+    "dark_hair_cards_right": 7,
+    "rear_hem_max_offset_cm": 4.5,
+    "morph_targets": 9
+  },
+  "offline_cloth": {
+    "simulation_instances": 1,
+    "leader_pose_enabled": true,
+    "predicted_lod": 0,
+    "render_lods": 1,
+    "render_bindings": [
+      {
+        "material": 0,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 1,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 2,
+        "has_cloth_mapping": true,
+        "cloth_asset_index": 0
+      },
+      {
+        "material": 3,
+        "has_cloth_mapping": true,
+        "cloth_asset_index": 1
+      },
+      {
+        "material": 4,
+        "has_cloth_mapping": true,
+        "cloth_asset_index": 2
+      },
+      {
+        "material": 5,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 6,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 7,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 8,
+        "has_cloth_mapping": true,
+        "cloth_asset_index": 3
+      },
+      {
+        "material": 9,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 11,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 12,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 13,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 14,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      },
+      {
+        "material": 15,
+        "has_cloth_mapping": false,
+        "cloth_asset_index": -1
+      }
+    ],
+    "cloth_lod_maps": [
+      {
+        "lod_map": [
+          0
+        ],
+        "physical_lods": 1,
+        "motion_map_size": 2966
+      },
+      {
+        "lod_map": [
+          0
+        ],
+        "physical_lods": 1,
+        "motion_map_size": 1799
+      },
+      {
+        "lod_map": [
+          0
+        ],
+        "physical_lods": 1,
+        "motion_map_size": 4816
+      },
+      {
+        "lod_map": [
+          0
+        ],
+        "physical_lods": 1,
+        "motion_map_size": 10039
+      }
+    ],
+    "dynamic_particles": 2339,
+    "kinematic_particles": 17281,
+    "cloth_count": 4,
+    "section_results": [
+      {
+        "asset_index": 0,
+        "maximum_independent_displacement_cm": 8.155252456665039
+      },
+      {
+        "asset_index": 1,
+        "maximum_independent_displacement_cm": 1.1923363208770752
+      },
+      {
+        "asset_index": 2,
+        "maximum_independent_displacement_cm": 1.1278530359268188
+      },
+      {
+        "asset_index": 3,
+        "maximum_independent_displacement_cm": 8.916888236999512
+      }
+    ],
+    "all_positions_finite": true,
+    "maximum_displacement_cm": 8.916888236999512,
+    "final_output_sections": 4,
+    "render_displacement_max_cm": 8.052849769592285,
+    "render_vertices_over_30cm": 0,
+    "front_hem_simulated_render_vertices": 112,
+    "front_hem_sampled_movement_cm": 8.868612289428711,
+    "rear_hem_sample_count": 1884,
+    "rear_hem_penetration_count": 0,
+    "rear_hem_min_gap_cm": 1.04931640625,
+    "render_displacement_by_asset": {
+      "0": 4.824333667755127,
+      "1": 1.9877631664276123,
+      "2": 1.1255913972854614,
+      "3": 8.052849769592285
+    },
+    "passed": true
+  },
+  "offline_blink": {
+    "mesh_morph_targets": 9,
+    "leader_morph_targets": 0,
+    "baseline": {
+      "per_frame_weight": 0,
+      "per_frame_active": 0
+    },
+    "follower_only": {
+      "per_frame_weight": 0.699999988079071,
+      "per_frame_active": 1
+    },
+    "leader_only": {
+      "per_frame_weight": 0.699999988079071,
+      "per_frame_active": 1
+    },
+    "both": {
+      "per_frame_weight": 0.699999988079071,
+      "per_frame_active": 1
+    },
+    "cleared": {
+      "per_frame_weight": 0,
+      "per_frame_active": 0
+    }
+  },
+  "in_game": {
+    "observed_in_ue4ss_log": [
+      "default lobby v0.7 loaded",
+      "four cloth sections and 2339 dynamic particles active",
+      "waist knife and scabbard offsets applied"
+    ],
+    "pending_visual_checks": [
+      "rear hem during running and wide stances",
+      "waist knife clearance and draw transition",
+      "left and right hair streaks under game lighting"
+    ]
+  }
+}

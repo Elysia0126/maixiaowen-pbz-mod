@@ -2,9 +2,17 @@
 
 将《影之刃零》主角外观替换为麦晓雯「水墨云图」，支持头发与衣物独立物理。非官方 MOD。
 
-**v0.6.1 为试验版**：[下载 v0.6.1](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.6.1) · [保留的 v0.4](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.4) · [更新记录](CHANGELOG.md) · [v0.6.1 验证记录](docs/validation-v0.6.1.json)
+**v0.7 试验版** · [下载 v0.7](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.7) · [v0.6.1](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.6.1) · [v0.4](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v0.4) · [更新记录](CHANGELOG.md) · [v0.7 验证记录](docs/validation-v0.7.json)
 
-## v0.6.1 内容
+## v0.7 内容
+
+默认加载大厅展示模型，加入视线变化与眨眼，微调脸颊和面罩，恢复耳上两侧的黑色发束。前摆缩至胯部并重新绑定物理，后摆增加臀部间隙。腰间小刀和刀鞘在收纳时一起后移 5.8 cm、下移 1.8 cm。
+
+[左右侧面的离线预览](docs/images/v0.7/side_hair_preview.png)
+
+UE4SS 日志已确认 v0.7 加载、四组布料物理启用、刀鞘与腰刀偏移应用。保存后的模型重新加载并进行离线加速测试，后摆 1,884 个采样均未穿入裤面。后摆在跑动和大幅动作时的表现、刀柄间隙和拔刀衔接仍待实机确认。
+
+## v0.6.1 的改动
 
 ### 修复战斗中崩溃
 
@@ -36,7 +44,7 @@ v0.6.1 不再使用 `LoopAsync` 和 `ExecuteInGameThread`，全部逻辑放进�
 
 ## 安装
 
-1. 下载 `MaixiaowenInk_PBZ_Mod_v0.6.1.zip` 并解压。
+1. 下载 `MaixiaowenInk_PBZ_Mod_v0.7.zip` 并解压。
 2. 退出游戏，将包内 `MOD` 的 `ProjectPBZ` 和 `platform` 两个文件夹合并复制到 PBZ 游戏根目录。
 3. 尚未安装 UE4SS 时，将 `UE4SS_PBZ_Optional` 中的 `platform` 文件夹也合并复制到游戏根目录。已有加载器时保留加载器、其他 MOD 和加载列表。
 4. 确认 `platform/steam/ue4ss/Mods/mods.txt` 包含 `MaixiaowenInk : 1`。已有加载列表请添加此条目，避免覆盖其他 MOD。
@@ -50,7 +58,9 @@ PBZ/
 │  ├─ MaixiaowenInk_P.pak
 │  ├─ MaixiaowenInk_P.utoc
 │  └─ MaixiaowenInk_P.ucas
-└─ platform/steam/ue4ss/Mods/MaixiaowenInk/Scripts/main.lua
+└─ platform/steam/ue4ss/Mods/MaixiaowenInk/Scripts/
+   ├─ main.lua
+   └─ variant.txt
 ```
 
 三种资源文件与 `main.lua` 必须一起更新，不能混用版本：网格多了一个材质槽，旧版脚本不会给它赋材质。包内 `SHA256.json` 校验各文件；Release 的 `SHA256SUMS.txt` 校验压缩包。
@@ -59,9 +69,10 @@ PBZ/
 
 | 按键 | 功能 |
 | --- | --- |
+| F6 | 在大厅版 v0.7 与 v0.6.1 之间切换，选择会保存在 `variant.txt` |
 | F7 | 开启/关闭眨眼 |
 | Shift+F7 | 播放一次约 2.5 秒的慢速眨眼，方便检查效果 |
-| F8 | 开启/关闭轻微瞳孔动态 |
+| F8 | 开启/关闭眼睛动态。Shift+F8 播放视线测试 |
 | F9 | 开启/关闭头发与衣物独立物理 |
 | F10 | 在替换形象与原版主角之间切换 |
 
@@ -69,7 +80,7 @@ PBZ/
 
 ## 验证范围与已知限制
 
-本地环境：Windows、Steam 构建 `301524-17219`、UE 5.7.4。
+本地环境为 Windows、Steam、UE 5.7.4。下文的握刀与稳定性记录来自 v0.6.1。
 
 游戏内已确认：握刀贴合（日志显示 `weapon_r` 挂点差距 0.00 cm），眨眼正常。
 
