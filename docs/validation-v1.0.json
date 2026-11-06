@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "channel": "stable",
+  "engine": "UE 5.7.4",
+  "platform": "Windows, Steam",
+  "packaged_files_match_installed_game": true,
+  "appearance": {
+    "models": {
+      "default": "lobby showcase mesh (v0.7)",
+      "f6_alternative": "in-match mesh (v0.6.1)"
+    },
+    "morph_targets_per_mesh": ["Blink", "EyeL_Left", "EyeL_Right", "EyeL_Up", "EyeL_Down", "EyeR_Left", "EyeR_Right", "EyeR_Up", "EyeR_Down"],
+    "visual_scale": 0.9,
+    "lobby_mesh_adjustments": {
+      "front_hem_tip_cm": {"before": 73.38, "after": 98.0},
+      "cheek_max_inset_per_side_cm": 0.28,
+      "dark_side_hair_cards": {"left": 8, "right": 7},
+      "rear_hem_max_offset_cm": 4.5,
+      "waist_knife_and_scabbard_offset_cm": {"back": 5.8, "down": 1.8}
+    },
+    "offline_cloth": {
+      "cloth_sections": 4,
+      "dynamic_particles": 2339,
+      "render_displacement_max_cm": 8.05,
+      "render_vertices_over_30cm": 0,
+      "rear_hem_samples": 1884,
+      "rear_hem_penetrations": 0,
+      "rear_hem_min_gap_cm": 1.05,
+      "passed": true
+    },
+    "offline_morphs": "Blink and gaze weights reach the follower whether set on the leader, the follower or both, without doubling",
+    "io_store_verification": "passed",
+    "gaze_source": {
+      "rotation_limits_degrees": {"left_eye": {"out": 42.41, "in": 37.59, "up": 30.02, "down": 31.19}, "right_eye": {"out": 42.42, "in": 37.58, "up": 30.04, "down": 31.57}},
+      "lid_follow_ratio": {"upper_down": 0.906, "upper_up": 0.534, "lower_down": 0.585, "lower_up": 0.382},
+      "taken_from": "hero head DNA (FACIAL_L_Eye / FACIAL_R_Eye and FACIAL_*_EyelidUpperA / LowerA against the eyeLook controls)",
+      "saccade_statistics": "103 saccades over 232 s of the hero's keyed cutscene gaze, 36 of 150 sampled camera cuts"
+    }
+  },
+  "voice_cn": {
+    "events": 42,
+    "clips": 270,
+    "clip_sources": {"fine_tuned_conversion": 243, "her_recorded_breaths": 16, "earlier_conversion_kept": 11},
+    "fine_tuning": {"model": "Seed-VC f0-conditioned 44 kHz (DiT_seed_v2_uvit_whisper_base_f0_44k)", "data_seconds": 223, "recordings": 134, "steps": 1000},
+    "pitch_shift_semitones": {"attack": 10.34, "charge": 4.36, "hurt": 7.65, "cough": 13.0},
+    "eq": "per kind, within +-6 dB, matched to her recordings of the same kind",
+    "encoding": "Wwise Vorbis written back into each clip's original byte range; 266 clips at quality 5, 4 at lower quality to fit",
+    "container": "same package records and chunk set as the earlier voice build; retoc verify passed",
+    "language": "Chinese voice setting only",
+    "carries_full_vo_cn_bank": true
+  },
+  "in_game": {
+    "confirmed": [
+      "weapon_r socket gap 0.00 cm (UE4SS log, v0.6.1)",
+      "lobby mesh loads by default; four cloth sections active",
+      "waist knife and scabbard offsets applied (UE4SS log)",
+      "F6 round trip and F10 restore",
+      "F7 / Shift+F7 blinking",
+      "F8 toggle and Shift+F8 sweep: left, right, up, down; closing and reopening during a sweep",
+      "replaced swing voice heard in game on an earlier voice build with the same layout"
+    ],
+    "not_confirmed": [
+      "every voice event of the 1.0 voice build, including hurt sounds",
+      "rear hem in running and wide stances",
+      "waist knife clearance during the draw",
+      "all weapons, maps, cutscenes, respawns and long fights"
+    ],
+    "stability": "about 50 minutes of game-thread-only logic without a crash dump after the v0.6.1 fix"
+  }
+}
