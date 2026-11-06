@@ -2,7 +2,7 @@
 
 把《影之刃零》主角的外观换成《三角洲行动》麦晓雯（骇爪）的「水墨云图」皮肤，并配上独立的头发与衣物物理、眨眼、眼球转动，以及可选的女声战斗语音。非官方 MOD。
 
-**v1.1** · [下载](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v1.1) · [更新记录](CHANGELOG.md) · [验证记录](docs/validation-v1.1.json)
+**v1.2** · [下载](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v1.2) · [更新记录](CHANGELOG.md) · [验证记录](docs/validation-v1.2.json)
 
 ## 实机截图
 
@@ -30,31 +30,49 @@ Steam 版游戏内拍摄，使用 v1.1 的默认 90% 身形。点击图片查看
 
 ## 安装
 
-Release 里有两个压缩包：
+仅支持 Steam 版。Release 里有两个压缩包：
 
-- `MaixiaowenInk_PBZ_Mod_v1.1.zip`：外观 MOD，必装。
-- `MaixiaowenInk_PBZ_VoiceCN_v1.0.zip`：中文战斗语音，可选。
+- `MaixiaowenInk_PBZ_Mod_v1.2.zip`：外观 MOD，必装。
+- `MaixiaowenInk_PBZ_VoiceCN_v1.2.zip`：中文战斗语音，可选。语音内容和 v1.0 相同。
+
+### 一键安装（推荐）
+
+1. 把外观包**整个解压**出来（不要在压缩包里直接双击）。
+2. 完全退出游戏。
+3. 双击解压出来的 `一键安装.bat`。它会自动找到 Steam 里的游戏目录，显示出来让你确认，直接按回车就开始装。
+4. 看到「安装完成，文件已校验」就可以启动游戏了。
+5. 想要女声战斗语音，同样解压语音包，双击里面的 `一键安装语音.bat`。游戏的语音语言需要是中文。
+
+安装程序只做这些事：
+
+- 复制本 MOD 自己的文件，复制完逐个校验。
+- 已经装过 UE4SS 的，保留你现有的加载器、设置和其他 MOD；没装过的，才会装上包里自带的 UE4SS。
+- 不修改 `mods.txt`。本 MOD 的文件夹里带着一个 `enabled.txt`，UE4SS 看到它就会自动加载本 MOD。
+- 游戏还开着、压缩包没解压完整、找到的目录不对，或者 `platform\steam` 里有别的工具的 `dwmapi.dll` 时，会停下来说明原因，不做任何改动。
+
+Windows 可能会问「是否运行此文件」，选「运行」。没有自动找到游戏时，按提示把游戏文件夹拖进窗口即可。如果提示「拒绝访问」，右键 `.bat` 选「以管理员身份运行」。安装程序的源码在 [`installer/`](installer/maixiaowen_installer.ps1)，可以先看再运行。
+
+### 手动安装
 
 游戏根目录是 Steam 里「管理 → 浏览本地文件」打开的位置。安装前先完全退出游戏。
 
-1. 解压外观包，把 `MOD` 里的 `ProjectPBZ` 和 `platform` 两个文件夹合并复制到游戏根目录。
-2. 还没装过 UE4SS 的话，把 `UE4SS_PBZ_Optional` 里的 `platform` 文件夹也合并复制到游戏根目录。已经装过的，保留现有加载器和其他 MOD。
-3. 打开 `platform/steam/ue4ss/Mods/mods.txt`，确认里面有一行 `MaixiaowenInk : 1`。已有加载列表的，加上这一行即可，不要整个覆盖。
-4. 想要女声战斗语音，就解压语音包，把里面的 `ProjectPBZ` 文件夹合并复制到游戏根目录。游戏的语音语言需要是中文。
-5. 启动游戏，读取存档。
+1. 把外观包 `MOD` 文件夹里的 `ProjectPBZ` 和 `platform` 拖进游戏根目录，合并文件夹。
+2. 还没装过 UE4SS 的，再把 `UE4SS_PBZ_Optional` 里的 `platform` 也拖进去。已经装过的不要动。
+3. 语音包：把它 `MOD` 文件夹里的 `ProjectPBZ` 拖进游戏根目录。
 
-装好后的文件：
+不需要改 `mods.txt`。装好后的文件：
 
 ```text
 PBZ/
 ├─ ProjectPBZ/Content/Paks/~mods/
 │  ├─ MaixiaowenInk_P.pak / .utoc / .ucas        外观（必装）
 │  └─ MaixiaowenVoiceCN_P.pak / .utoc / .ucas    语音（可选）
-└─ platform/steam/ue4ss/Mods/MaixiaowenInk/Scripts/
-   └─ main.lua
+└─ platform/steam/ue4ss/Mods/MaixiaowenInk/
+   ├─ enabled.txt                                让 UE4SS 自动加载本 MOD
+   └─ Scripts/main.lua
 ```
 
-按过 F6 之后，`main.lua` 旁边会多一个 `scale.txt`，记录选的大小。从 v1.0 升级的，旧的 `variant.txt` 已经不用了，可以删掉。
+按过 F6 之后，`main.lua` 旁边会多一个 `scale.txt`，记录选的大小。从旧版升级的，`mods.txt` 里原来那行 `MaixiaowenInk : 1` 留着也没关系；旧的 `variant.txt` 已经不用了，可以删掉。
 
 同名的三个资源文件（pak、utoc、ucas）和 `main.lua` 必须来自同一版本，不要混用。每个包里都有 `SHA256.json` 用来校验文件，Release 的 `SHA256SUMS.txt` 用来校验压缩包。
 
@@ -119,9 +137,10 @@ PBZ/
 - 握刀贴合，90% 和正常大小下日志显示的右手武器挂点误差都是 0.00 cm。
 - 模型默认加载，4 组布料物理生效。F6 在两种大小之间往返切换、选择在重启后沿用、F10 恢复原版都正常；正常大小时和原版主角一样高。
 - 眨眼、慢速眨眼正常。F8 开关和 Shift+F8 测试中，眼睛左右上下转动正确。
+- 一键安装：在作者的游戏上用 `一键卸载.bat` 卸掉、再用 `一键安装.bat` 和 `一键安装语音.bat` 装回，只有本 MOD 的文件和 `mods.txt` 里本 MOD 那一行有变化。`mods.txt` 里没有这一行时，UE4SS 通过 `enabled.txt` 正常加载了本 MOD。另在模拟的游戏目录上测了全新安装、已有 UE4SS 和其他 MOD、各种出错情况，共 29 项都通过。
 - 战斗语音的替换方式在早期测试版本上实测过：挥刀时播放的是替换后的声音。1.0 的语音包沿用同样的文件结构，已装进作者的游戏，但没有逐个事件在实机里测过，受击类语音也还没有专门测试。
 
-离线已验证：布料模拟没有顶点被甩飞，后摆 1,884 个采样点都没有穿进裤子；眼球和眨眼变形能从动画骨架正确传到显示模型；资源容器校验通过。详细数据见[验证记录](docs/validation-v1.1.json)。
+离线已验证：布料模拟没有顶点被甩飞，后摆 1,884 个采样点都没有穿进裤子；眼球和眨眼变形能从动画骨架正确传到显示模型；资源容器校验通过。详细数据见[验证记录](docs/validation-v1.2.json)。
 
 已知限制：
 
@@ -136,9 +155,10 @@ PBZ/
 ## 停用、卸载与回退
 
 - 临时切回原版主角外观：按 F10。只关眨眼：F7。只关眼球转动：F8。
-- 停用外观：退出游戏，把 `mods.txt` 里那一行改成 `MaixiaowenInk : 0`。
+- 一键卸载：退出游戏，双击外观包里的 `一键卸载.bat`。它把本 MOD 的外观、脚本和语音文件移到回收站，并去掉 `mods.txt` 里本 MOD 的那一行（原文件另存为 `mods.txt.maixiaowen-backup`）。UE4SS 加载器和其他 MOD 都不动。只想去掉语音，就用语音包里的 `一键卸载语音.bat`。
+- 停用外观但不删除：退出游戏，删除 `Mods/MaixiaowenInk` 里的 `enabled.txt`；如果 `mods.txt` 里还有 `MaixiaowenInk : 1`，也一起删掉或改成 `0`。
 - 停用语音：退出游戏，删除或移走 `~mods` 里的三个 `MaixiaowenVoiceCN_P` 文件，下次启动就是原声。
-- 完全卸载：退出游戏，删除 `~mods` 里本 MOD 的同名文件、`Mods/MaixiaowenInk` 文件夹和 `mods.txt` 里那一行。其他 MOD 和游戏文件都不用动。
+- 手动卸载：退出游戏，删除 `~mods` 里本 MOD 的同名文件、`Mods/MaixiaowenInk` 文件夹，以及 `mods.txt` 里本 MOD 的那一行（如果有）。其他 MOD 和游戏文件都不用动。
 - 回退旧版：退出游戏，用旧版压缩包里的三个资源文件和 `main.lua` 一起覆盖，不要只换其中一部分。旧版本都在 [Releases](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases)。
 
 ## 角色设定参考
@@ -148,6 +168,7 @@ PBZ/
 ## 仓库内容
 
 - `src/main.lua`：发布用的 UE4SS 脚本。
+- `installer/maixiaowen_installer.ps1`：一键安装和卸载用的脚本，压缩包里的 `.bat` 只是调用它。
 - `docs/`：截图、各版本验证记录和发布包信息。
 - `THIRD_PARTY/`：第三方许可证。
 

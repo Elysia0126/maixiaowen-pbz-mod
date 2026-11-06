@@ -1,16 +1,16 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "channel": "stable",
   "assets": [
     {
-      "name": "MaixiaowenInk_PBZ_Mod_v1.1.zip",
-      "bytes": 145954361,
-      "sha256": "0f7696fbec767b77bdc4db0f405582003d4593a6f260cfe1534e9aaa5c6ce0d6"
+      "name": "MaixiaowenInk_PBZ_Mod_v1.2.zip",
+      "bytes": 145962138,
+      "sha256": "c98ffb49bf1d9e89d69c5ec0ee05d74969e763ad5920786fee1d9e88115489fd"
     },
     {
-      "name": "MaixiaowenInk_PBZ_VoiceCN_v1.0.zip",
-      "bytes": 197478641,
-      "sha256": "c05a2e0fd7e34e4d6384e70fbf7cc04b40463f344ba8f157a4641feee853e5c9"
+      "name": "MaixiaowenInk_PBZ_VoiceCN_v1.2.zip",
+      "bytes": 197485805,
+      "sha256": "c9e55d421c04ac35c73eb92fc56e0f61c70a11d2bd4e757faf6183d0b018232a"
     }
   ]
 }
