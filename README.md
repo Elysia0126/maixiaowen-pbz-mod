@@ -4,12 +4,18 @@
 
 **v1.1** · [下载](https://github.com/Elysia0126/maixiaowen-pbz-mod/releases/tag/v1.1) · [更新记录](CHANGELOG.md) · [验证记录](docs/validation-v1.1.json)
 
+## 实机截图
+
+Steam 版游戏内拍摄，使用 v1.1 的默认 90% 身形。点击图片查看原图。
+
+<a href="docs/images/v1.1/01-mist-full-body.jpg"><img src="docs/images/v1.1/01-mist-full-body.jpg" alt="雾林灯树前的麦晓雯全身照" width="100%"></a>
+
 <p>
-  <img src="docs/images/v1.0/ingame-body.jpg" alt="游戏内全身" height="420">
-  <img src="docs/images/v1.0/ingame-face.jpg" alt="游戏内脸部" height="420">
+  <a href="docs/images/v1.1/02-mist-eyes.jpg"><img src="docs/images/v1.1/02-mist-eyes.jpg" alt="眼睛与面罩的正面特写" width="48%"></a>
+  <a href="docs/images/v1.1/03-mist-hair.jpg"><img src="docs/images/v1.1/03-mist-hair.jpg" alt="马尾、发绳与耳上黑发束的俯视近景" width="48%"></a>
 </p>
 
-游戏内截图，拍摄于模型调整期间；之后又还原了耳上两侧的黑色发束，左右发束见[离线预览](docs/images/v0.7/side_hair_preview.png)。
+也可查看 [v1.0 的实机截图](docs/images/v1.0/)和[左右发束离线预览](docs/images/v0.7/side_hair_preview.png)。
 
 ## 内容一览
 
