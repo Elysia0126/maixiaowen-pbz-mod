@@ -1,0 +1,152 @@
+{
+  "version": "1.2",
+  "channel": "stable",
+  "engine": "UE 5.7.4",
+  "platform": "Windows, Steam",
+  "packaged_files_match_installed_game": true,
+  "appearance": {
+    "lobby_mesh_adjustments": {
+      "front_hem_tip_cm": {
+        "before": 73.38,
+        "after": 98.0
+      },
+      "cheek_max_inset_per_side_cm": 0.28,
+      "dark_side_hair_cards": {
+        "left": 8,
+        "right": 7
+      },
+      "rear_hem_max_offset_cm": 4.5,
+      "waist_knife_and_scabbard_offset_cm": {
+        "back": 5.8,
+        "down": 1.8
+      }
+    },
+    "offline_cloth": {
+      "cloth_sections": 4,
+      "dynamic_particles": 2339,
+      "render_displacement_max_cm": 8.05,
+      "render_vertices_over_30cm": 0,
+      "rear_hem_samples": 1884,
+      "rear_hem_penetrations": 0,
+      "rear_hem_min_gap_cm": 1.05,
+      "passed": true
+    },
+    "offline_morphs": "Blink and gaze weights reach the follower whether set on the leader, the follower or both, without doubling",
+    "io_store_verification": "passed",
+    "gaze_source": {
+      "rotation_limits_degrees": {
+        "left_eye": {
+          "out": 42.41,
+          "in": 37.59,
+          "up": 30.02,
+          "down": 31.19
+        },
+        "right_eye": {
+          "out": 42.42,
+          "in": 37.58,
+          "up": 30.04,
+          "down": 31.57
+        }
+      },
+      "lid_follow_ratio": {
+        "upper_down": 0.906,
+        "upper_up": 0.534,
+        "lower_down": 0.585,
+        "lower_up": 0.382
+      },
+      "taken_from": "hero head DNA (FACIAL_L_Eye / FACIAL_R_Eye and FACIAL_*_EyelidUpperA / LowerA against the eyeLook controls)",
+      "saccade_statistics": "103 saccades over 232 s of the hero's keyed cutscene gaze, 36 of 150 sampled camera cuts"
+    },
+    "model": "lobby showcase mesh (v0.7)",
+    "morph_targets": [
+      "Blink",
+      "EyeL_Left",
+      "EyeL_Right",
+      "EyeL_Up",
+      "EyeL_Down",
+      "EyeR_Left",
+      "EyeR_Right",
+      "EyeR_Up",
+      "EyeR_Down"
+    ],
+    "body_scale": {
+      "default": 0.9,
+      "f6_alternative": 1.0,
+      "saved_in": "scale.txt next to main.lua",
+      "root_motion_translation_scale": {
+        "0.9": 1.1111,
+        "1.0": 1.0
+      },
+      "waist_knife_offset_grows_with_scale": true
+    }
+  },
+  "voice_cn": {
+    "events": 42,
+    "clips": 270,
+    "clip_sources": {
+      "fine_tuned_conversion": 243,
+      "her_recorded_breaths": 16,
+      "earlier_conversion_kept": 11
+    },
+    "fine_tuning": {
+      "model": "Seed-VC f0-conditioned 44 kHz (DiT_seed_v2_uvit_whisper_base_f0_44k)",
+      "data_seconds": 223,
+      "recordings": 134,
+      "steps": 1000
+    },
+    "pitch_shift_semitones": {
+      "attack": 10.34,
+      "charge": 4.36,
+      "hurt": 7.65,
+      "cough": 13.0
+    },
+    "eq": "per kind, within +-6 dB, matched to her recordings of the same kind",
+    "encoding": "Wwise Vorbis written back into each clip's original byte range; 266 clips at quality 5, 4 at lower quality to fit",
+    "container": "same package records and chunk set as the earlier voice build; retoc verify passed",
+    "language": "Chinese voice setting only",
+    "carries_full_vo_cn_bank": true,
+    "package_version": "1.2 (audio unchanged since 1.0)"
+  },
+  "in_game": {
+    "confirmed": [
+      "weapon_r socket gap 0.00 cm at 0.9 and at 1.0 body scale (UE4SS log)",
+      "lobby mesh loads by default; four cloth sections active",
+      "waist knife and scabbard offsets applied (UE4SS log)",
+      "F6 round trips between 0.9 and 1.0; the choice is written to scale.txt and read at startup",
+      "F10 restore and re-apply at 1.0 body scale",
+      "at 1.0 body scale she stands as tall as the original hero",
+      "F7 / Shift+F7 blinking",
+      "F8 toggle and Shift+F8 sweep: left, right, up, down; closing and reopening during a sweep",
+      "replaced swing voice heard in game on an earlier voice build with the same layout"
+    ],
+    "not_confirmed": [
+      "running, dodging, the draw and combat at 1.0 body scale",
+      "every voice event of the voice build, including hurt sounds",
+      "rear hem in running and wide stances",
+      "waist knife clearance during the draw",
+      "all weapons, maps, cutscenes, respawns and long fights"
+    ],
+    "stability": "about 50 minutes of game-thread-only logic without a crash dump after the v0.6.1 fix"
+  },
+  "loading": "enabled.txt in Mods/MaixiaowenInk; mods.txt is not needed (this UE4SS build logs \"Mod has enabled.txt, starting mod\")",
+  "one_click_installer": {
+    "finds_game": "folder the package sits in, Steam uninstall record, Steam libraries (libraryfolders.vdf + appmanifest_4115450.acf); otherwise asks for the folder",
+    "install": "copies only this mod's files, verifies SHA-256 after copying; installs the bundled UE4SS only when none is present; never edits mods.txt",
+    "uninstall": "moves this mod's files to the Recycle Bin and removes only MaixiaowenInk lines from mods.txt, keeping a backup, its encoding and line endings; UE4SS stays",
+    "stops_without_changes_when": [
+      "game is running from that folder",
+      "package not fully extracted",
+      "folder is not the Steam game folder",
+      "platform/steam/dwmapi.dll exists without UE4SS"
+    ],
+    "mock_tests_passed": 29,
+    "explorer_unzip_keeps_chinese_file_names": true,
+    "real_game": [
+      "uninstalled through 一键卸载.bat on the author's game: only this mod's 9 files and its mods.txt line changed",
+      "reinstalled through 一键安装.bat and 一键安装语音.bat with Enter answers: game folder found from the Steam records, existing UE4SS kept, every copied file verified",
+      "with no MaixiaowenInk line in mods.txt, UE4SS logged: Mod 'MaixiaowenInk' has enabled.txt, starting mod",
+      "appearance applied, 4 cloth sections active, weapon_r gap 0.00 cm",
+      "Chinese text shows correctly in the console window opened by double-clicking the .bat"
+    ]
+  }
+}
