@@ -32,6 +32,7 @@ local nextLiveCheckAt = 0
 local liveCurveNames = nil
 local liveCheckFailed = false
 local liveReported = false
+-- F6 switches between the 90% body and the hero's normal size. The saved choice is read further down.
 local visualScale = 0.90
 local rootMotionScale = 1 / visualScale
 local blinkEnabled = true
@@ -129,7 +130,9 @@ local function updateWaistKnife(active)
             local socket=current.driver:GetSocketTransform(FName(waistSockets[name]),0)
             local mathLibrary=StaticFindObject("/Script/Engine.Default__KismetMathLibrary")
             local origin=socket.Translation
-            local moved={X=origin.X-5.8*forward.X,Y=origin.Y-5.8*forward.Y,Z=origin.Z-1.8}
+            -- Fitted at 90% scale; the offset grows with the body so the fit is the same at either size.
+            local fit=visualScale/0.90
+            local moved={X=origin.X-5.8*fit*forward.X,Y=origin.Y-5.8*fit*forward.Y,Z=origin.Z-1.8*fit}
             local offset=mathLibrary:InverseTransformLocation(socket,moved)
             local adjusted={X=original.X+offset.X,Y=original.Y+offset.Y,Z=original.Z+offset.Z}
             component:K2_SetRelativeLocation(adjusted,false,{},true)
@@ -209,6 +212,8 @@ local function updateBodyScale()
     local wanted = scale.X * visualScale
     if math.abs(current.driver.RelativeScale3D.X - wanted) > 0.0001 then
         current.driver:SetRelativeScale3D({X=wanted,Y=scale.Y*visualScale,Z=scale.Z*visualScale})
+        -- Cloth particles are in world space; restart them at the new size instead of letting them snap.
+        if physicsEnabled and valid(current.display) then current.display:ForceClothNextUpdateTeleportAndReset() end
         log("Body scale applied to animation driver: " .. tostring(wanted))
     end
     if valid(current.pawn) and math.abs(current.pawn.AnimRootMotionTranslationScale - 1) < 0.001 then
@@ -249,48 +254,32 @@ local definitions07 = {
 {hair=true,rootColor=0.02,tipColor=0.01},
 {hair=true,rootColor=0.026,tipColor=0.009,scatter=0.15,specular=0.16}
 }
-local definitions061 = {
-{Albedo="T_F_Hack_ink_S_012_Props_Mobile_C_5d9e2c",Normal="T_F_Hack_ink_S_012_Props_Mobile_N_7f6479",Mix="T_ARM_T_F_Hack_ink_S_012_Props_Mobile_MRO_1e72e7"},
-{Albedo="T_F_Hack_ink_S_012_Mask_PCUI_C_87f1b8",Normal="T_F_Hack_ink_S_012_Mask_PCUI_N_dcdb86",Mix="T_ARM_T_F_Hack_ink_S_012_Mask_PCUI_MRA_225221"},
-{Albedo="T_F_Hack_ink_S_012_Upper_3P_MobileUI_01_C_4c339b",Normal="T_F_Hack_ink_S_012_Upper_3P_MobileUI_01_N_8037d3",Mix="T_ARM_T_F_Hack_ink_S_012_Upper_3P_MobileUI_01_MRA_3e2d80"},
-{hair=true,rootColor=0.28,tipColor=0.48},
-{Albedo="T_F_Hack_ink_S_012_Upper_3P_MobileUI_02_C_370bce",Normal="T_F_Hack_ink_S_012_Upper_3P_MobileUI_02_N_a8ed2a",Mix="T_ARM_T_F_Hack_ink_S_012_Upper_3P_MobileUI_02_MRA_45b83f"},
-{Albedo="T_MaixSkin_Scalp_v05",Normal="T_F_Hack_ink_S_012_Head_N_8bd2fa",Mix="T_MaixSkin_HeadARM",skin=true},
-{occlusion=true},
-{eye=true,iris="T_MaixEye_Iris",scalars={IrisUVRadius=0.145,IrisBrightness=0.9,ScleraBrightness=0.84,RefractionDepthScale=0.45,LimbusDarkScale=0.75}},
-{hair=true,rootColor=0.52,tipColor=0.82},
-{Albedo="T_F_Hack_ink_S_012_Lower_3P_Mobile_C_342288",Normal="T_F_Hack_ink_S_012_Lower_3P_Mobile_N_2a5fb8",Mix="T_ARM_T_F_Hack_ink_S_012_Lower_3P_Mobile_MRO_7c9950"},
-{Albedo="T_Signal_lamp_001_C_HD_25cd11",Normal="T_Signal_lamp_001_N_HD_fb2a8c",Mix="T_ARM_T_Signal_lamp_001_MRA_HD_83f151"},
-{hair=true,rootColor=0.28,tipColor=0.48}
-}
-local variants = {
-    ["0.7"] = {path="/Game/Mods/Maixiaowen/SK_Maixiaowen_Ink.SK_Maixiaowen_Ink", definitions=definitions07, tag="07", other="0.6.1"},
-    ["0.6.1"] = {path="/Game/Mods/Maixiaowen/V061/SK_Maixiaowen_Ink.SK_Maixiaowen_Ink", definitions=definitions061, tag="061", other="0.7"},
-}
--- The F6 choice lives next to this script, so a rollback survives a restart.
-local variantFile = "variant.txt"
+-- Settings files live next to this script.
+local scriptFolder = ""
 do
     local ok, source = pcall(function() return debug.getinfo(1, "S").source end)
     local folder = ok and source and source:gsub("^@", ""):match("^(.*[/\\])")
-    if folder then variantFile = folder .. "variant.txt" end
+    if folder then scriptFolder = folder end
 end
-local variant = "0.7"
+local meshPath = "/Game/Mods/Maixiaowen/SK_Maixiaowen_Ink.SK_Maixiaowen_Ink"
+-- The F6 size choice survives a restart.
+local scaleFile = scriptFolder .. "scale.txt"
 do
-    local ok, file = pcall(io.open, variantFile, "r")
+    local ok, file = pcall(io.open, scaleFile, "r")
     if ok and file then
-        local saved = file:read("*l")
+        local saved = tonumber(file:read("*l") or "")
         file:close()
-        if saved and variants[saved] then variant = saved end
+        if saved and math.abs(saved - 1) < 0.001 then visualScale, rootMotionScale = 1, 1 end
     end
 end
 
-local function saveVariant()
-    local ok, file = pcall(io.open, variantFile, "w")
+local function saveScale()
+    local ok, file = pcall(io.open, scaleFile, "w")
     if ok and file then
-        file:write(variant, "\n")
+        file:write(string.format("%.2f\n", visualScale))
         file:close()
     else
-        log("Could not save model version to " .. variantFile)
+        log("Could not save body scale to " .. scaleFile)
     end
 end
 
@@ -313,18 +302,16 @@ local eyeTuneTextures = {
     IrisAO={White="/Game/Mods/Maixiaowen/Textures/T_MaixEye_White.T_MaixEye_White",
         Native="/Game/Test/Zero_LookDev/ZeroFile/Character/Hun/Head/Textures/T_ZeroHun_Eye_AO.T_ZeroHun_Eye_AO"},
 }
-local eyeTuneFile = variantFile:gsub("variant%.txt$", "eye_tune.txt")
+local eyeTuneFile = scriptFolder .. "eye_tune.txt"
 local function eyeSetting(name, fallback)
-    if variant=="0.7" then
-        if eyeTune[name]~=nil then return eyeTune[name] end
-        local value=definitions07[8].scalars[name]
-        if value~=nil then return value end
-    end
+    if eyeTune[name]~=nil then return eyeTune[name] end
+    local value=definitions07[8].scalars[name]
+    if value~=nil then return value end
     return fallback
 end
 
 local function applyEyeTune(tune)
-    if variant~="0.7" or not enabled or not current or not valid(current.display) then return end
+    if not enabled or not current or not valid(current.display) then return end
     -- Resolve both MIDs at the time of use. Neither is retained across a mesh change.
     local eye=current.display:GetMaterial(7)
     local shell=current.display:GetMaterial(6)
@@ -352,7 +339,6 @@ local function applyEyeTune(tune)
 end
 
 local function reloadEyeTune()
-    if variant~="0.7" then log("Eye tune ignored for v0.6.1") return end
     local file,why=io.open(eyeTuneFile,"r")
     if not file then log("Eye tune file unavailable: "..tostring(why)) return end
     local parsed,count={},0
@@ -423,7 +409,7 @@ end
 
 
 local function makeMaterial(pawn, index)
-    local definition = variants[variant].definitions[index]
+    local definition = definitions07[index]
     local parentPath = definition.nativeSkin and "/Game/PBZContent/Characters/Hero/Hun_New_V2b/Material/MI_ZeroHun_Head_b.MI_ZeroHun_Head_b"
         or definition.tear and "/Game/PBZContent/Characters/Hero/Hun_New_V2/Material/MI_ZeroHun_LacrimalFluid.MI_ZeroHun_LacrimalFluid"
         or definition.occlusion and "/Game/PBZContent/Characters/Hero/Hun_New_V2/Material/MI_ZeroHun_EyeOcclusion.MI_ZeroHun_EyeOcclusion"
@@ -433,7 +419,7 @@ local function makeMaterial(pawn, index)
     local parent = load(parentPath)
     if not valid(parent) then error("Native material parent missing: " .. parentPath) end
     local library = StaticFindObject("/Script/Engine.Default__KismetMaterialLibrary")
-    local material = library:CreateDynamicMaterialInstance(pawn, parent, FName("MaixiaowenMaterial" .. variants[variant].tag .. "_" .. index .. "_" .. materialGeneration), 0)
+    local material = library:CreateDynamicMaterialInstance(pawn, parent, FName("MaixiaowenMaterial07_" .. index .. "_" .. materialGeneration), 0)
     if not valid(material) then error("Could not create material " .. index) end
     local function setTexture(name, textureName)
         local texture = load("/Game/Mods/Maixiaowen/Textures/" .. textureName .. "." .. textureName)
@@ -511,7 +497,7 @@ local function apply()
     if not valid(pawn) or not pawn:GetFullName():find("BP_Renewal_Hun_C", 1, true) then return end
     local ownerName = pawn:GetFullName()
     if current and (current.ownerName ~= ownerName or not valid(current.display)) then current = nil; physicsStatsReported = false end
-    if not valid(replacement) then replacement = load(variants[variant].path) end
+    if not valid(replacement) then replacement = load(meshPath) end
     if not valid(replacement) then error("Replacement asset not found; check the pak/utoc/ucas installation") end
     if not current then
         local components = {}
@@ -562,7 +548,7 @@ local function apply()
         -- Always new instances under new names: a pointer kept across a swap can pass IsValid as another object
         -- reallocated at the same address.
         materialGeneration = materialGeneration + 1
-        for i in ipairs(variants[variant].definitions) do
+        for i in ipairs(definitions07) do
             current.display:SetMaterial(i - 1, makeMaterial(pawn, i))
         end
         current.display:SetAllowClothActors(true)
@@ -577,7 +563,7 @@ local function apply()
         log("Appearance applied: " .. replacement:GetFullName())
     end
     updateBodyScale()
-    guardedWaistKnife(variant=="0.7")
+    guardedWaistKnife(true)
     for _, entry in ipairs(current.visibility) do
         if valid(entry.component) then
             entry.component:SetVisibility(entry.component == current.display, false)
@@ -846,7 +832,7 @@ end
 -- callbacks, so Lua running off the game thread eventually corrupts the VM. All work happens in
 -- gameThreadTick. Key callbacks arrive on the input thread and only flip a flag that already exists,
 -- which allocates nothing.
-local keyRequests = {appearance=false, physics=false, gaze=false, gazeTest=false, blink=false, slowBlink=false, variant=false, eyeTune=false, eyeCamera=false}
+local keyRequests = {appearance=false, physics=false, gaze=false, gazeTest=false, blink=false, slowBlink=false, scale=false, eyeTune=false, eyeCamera=false}
 
 local function handleKeys()
     if keyRequests.eyeTune then
@@ -859,16 +845,18 @@ local function handleKeys()
         local ok,err=pcall(cycleEyeCamera)
         if not ok then log("Eye review camera failed: "..tostring(err)) end
     end
-    if keyRequests.variant then
-        keyRequests.variant=false
-        -- The same route as F10 off then on, which has run repeatedly in game.
-        local ok, err = pcall(restore)
-        if not ok then log("Restore error: " .. tostring(err)) end
-        variant = variants[variant].other
-        replacement = nil
-        saveVariant()
+    if keyRequests.scale then
+        keyRequests.scale=false
+        -- Hand back the current root motion compensation; updateBodyScale sets the one for the new size.
+        if current and valid(current.pawn) and math.abs(current.pawn.AnimRootMotionTranslationScale - rootMotionScale) < 0.001 then
+            current.pawn.AnimRootMotionTranslationScale = 1
+        end
+        visualScale = visualScale < 0.95 and 1 or 0.90
+        rootMotionScale = 1 / visualScale
+        saveScale()
+        gripCheckTicks = 0
         if enabled then guardedApply() end
-        log("Model version: " .. variant)
+        log(string.format("Body scale: %d%%", math.floor(visualScale * 100 + 0.5)))
     end
     if keyRequests.appearance then
         keyRequests.appearance=false
@@ -934,7 +922,7 @@ local function gameThreadTick()
     stepEyes()
 end
 
-RegisterKeyBind(Key.F6,function() keyRequests.variant=true end)
+RegisterKeyBind(Key.F6,function() keyRequests.scale=true end)
 RegisterKeyBind(Key.F6,{ModifierKey.SHIFT},function() keyRequests.eyeTune=true end)
 RegisterKeyBind(Key.F5,{ModifierKey.SHIFT},function() keyRequests.eyeCamera=true end)
 RegisterKeyBind(Key.F10,function() keyRequests.appearance=true end)
@@ -943,7 +931,7 @@ RegisterKeyBind(Key.F8,function() keyRequests.gaze=true end)
 RegisterKeyBind(Key.F8,{ModifierKey.SHIFT},function() keyRequests.gazeTest=true end)
 RegisterKeyBind(Key.F7,function() keyRequests.blink=true end)
 RegisterKeyBind(Key.F7,{ModifierKey.SHIFT},function() keyRequests.slowBlink=true end)
-log("Loaded appearance, model version " .. variant .. ". F6 switches between v0.6.1 and v0.7. F10 toggles appearance. F9 toggles independent hair / clothing physics. F8 toggles eye movement; Shift+F8 plays a test sweep. F7 toggles blinking; Shift+F7 plays a slow test blink.")
+log(string.format("Loaded appearance at %d%% body scale. F6 switches between 90%% and normal size.", math.floor(visualScale * 100 + 0.5)) .. " F10 toggles appearance. F9 toggles independent hair / clothing physics. F8 toggles eye movement; Shift+F8 plays a test sweep. F7 toggles blinking; Shift+F7 plays a slow test blink.")
 
 -- Registered last: from here on the game thread may enter Lua, so this chunk must already be finished.
 LoopInGameThreadWithDelay(16,gameThreadTick)
